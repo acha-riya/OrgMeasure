@@ -43,15 +43,9 @@ run("Remove Outliers...", "radius=0.5 threshold=0 which=Dark");
 setAutoThreshold("Default");
 run("Threshold...");
 waitForUser("Adjust threshold manually, then click OK to continue.");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
-run("Smooth");
+for (i = 0; i < 9; i++) {
+    run("Smooth");
+}
 waitForUser("Smooth additionally as needed and clear the background outliers manually, then click OK to continue.");
 setAutoThreshold("Default");
 run("Threshold...");
