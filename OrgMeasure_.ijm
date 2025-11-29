@@ -1,20 +1,11 @@
 inputDir=getDirectory("Choose directory containing input files");
 
-// Create a Processedbinary subfolder if it doesn't exist
-outputDir = inputDir + "Processedbinary" + File.separator;
+fileList=getFileList(inputDir);
+outputDir = inputDir + "Processedbinary/";  // saves results in subfolder
 File.makeDirectory(outputDir);
 
-fileList = getFileList(inputDir);
+for(i = 0; i <= fileList.length-1; i++)
 
-for (i = 0; i < fileList.length; i++) {
-    if (endsWith(fileList[i], ".tif") || endsWith(fileList[i], ".tiff")) {
-        print("Processing: " + fileList[i]);
-        path = inputDir + fileList[i];
-        open(path);
-        measure(fileList[i]);
-    } else {
-        print("Skipping non-TIF file: " + fileList[i]);
-    }
 {
 
 print(fileList[i]);
@@ -22,6 +13,18 @@ path = inputDir+fileList[i];
 
 open(path);
 measure(fileList[i]);
+
+  baseName = replace(fileList[i], ".tif", "");
+  baseName = replace(baseName, ".TIF", "");
+  
+ // --- SAVE THE FINAL BINARY IMAGE ---
+ savePath = outputDir + baseName + "_binary.tif";
+    saveAs("Tiff", savePath);
+    
+    // --- CLOSE FILE AFTER SAVING ---
+    close();      // closes the current image
+    run("Close All");  // extra safety if ROI/threshold windows remain
+    print("Saved final binary to: " + savePath);
 
 }
 
@@ -52,26 +55,25 @@ run("Smooth");
 waitForUser("Smooth additionally as needed and clear the background outliers manually, then click OK to continue.");
 setAutoThreshold("Default");
 run("Threshold...");
+
+answer = getBoolean("Is there a hole?");
+// If YES → run your hole-filling steps
+if (answer) {
+	run("Threshold...");
+	waitForUser("Adjust the threshold, then press OK to continue.");
+    setOption("BlackBackground", false);
+    run("Convert to Mask");
+    run("Fill Holes");
+} 
+// If NO → continue to next step
+else {
+    print("Skipping hole-filling step.");
+}
+
 waitForUser("Adjust threshold manually, then click OK to continue.");
 run("Convert to Mask");
 run("Create Selection");
 run("Measure");
 
-  // NEW SECTION: Save binary image
-    baseName = replace(currentFile, ".tif", "");
-    baseName = replace(baseName, ".tiff", "");
-    savePath = outputDir + baseName + "_binary.tif";
 
-    // Ensure directory exists before saving
-    File.makeDirectory(outputDir);
-
-    // Try saving and catch errors
-    if (isOpen(baseName + "_binary")) {
-        selectWindow(baseName + "_binary");
-    }
-    saveAs("Tiff", savePath);
-    print("✅ Saved processed image to: " + savePath);
-
-    // close to keep workspace clean
-    close();
 }
